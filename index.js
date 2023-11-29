@@ -1,90 +1,41 @@
-// Code yang ditempatkan di dalam script.js
-const PuzzleGame = (function() {
-  let size;
-  let board = [];
+const express = require('express')
+const app = express()
 
-  class PuzzleGame {
-    constructor(gameSize) {
-      size = gameSize;
-      this.init();
-    }
+var bodyParser = require('body-parser')
+var cors = require('cors')
 
-    init() {
-      for (let i = 0; i < size * size - 1; i++) {
-        board.push(i + 1);
-      }
-      board.push(null);
-      this.shuffle();
-      this.renderBoard();
-    }
+// create application/json parser
+var jsonParser = bodyParser.json()
 
-    shuffle() {
-      for (let i = board.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [board[i], board[j]] = [board[j], board[i]];
-      }
-    }
+// create application/x-www-form-urlencoded parser
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
-    renderBoard() {
-      const puzzleElement = document.getElementById('puzzle');
-      puzzleElement.innerHTML = '';
-      board.forEach(num => {
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        tile.innerText = num ? num : '';
-        tile.addEventListener('click', () => this.move(num));
-        puzzleElement.appendChild(tile);
-      });
-      puzzleElement.style.gridTemplateColumns = `repeat(${size}, 100px)`;
-    }
+const port = 5668
 
-    move(tile) {
-      const emptyIndex = board.indexOf(null);
-      const tileIndex = board.indexOf(tile);
+app.use(cors())
+app.use(jsonParser);
+app.use(urlencodedParser);
 
-      if (this.isValidMove(emptyIndex, tileIndex)) {
-        board[emptyIndex] = tile;
-        board[tileIndex] = null;
-        this.renderBoard();
-        if (this.isSolved()) {
-          alert('Selamat!! kamu berhasil.\nKeberuuntungan mu sudah habis :D');
-        }
-      } else {
-        console.log('Invalid move!');
-      }
-    }
+app.post('/login', (req, res) => {
+  // Simulasi data dari database
+  const username = 'admin'
+  const password = '789456'
 
-    isValidMove(emptyIndex, tileIndex) {
-      const rowDiff = Math.abs(Math.floor(emptyIndex / size) - Math.floor(tileIndex / size));
-      const colDiff = Math.abs((emptyIndex % size) - (tileIndex % size));
-      const isAdjacent = (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
-      return isAdjacent;
-    }
-
-    isSolved() {
-      for (let i = 0; i < size * size - 1; i++) {
-        if (board[i] !== i + 1) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    // Getter untuk mendapatkan nilai size
-    static getSize() {
-      return size;
-    }
-
-    // Getter untuk mendapatkan nilai board
-    static getBoard() {
-      return board;
-    }
+  // check if username is valid
+  if (req.body.username !== username) {
+    res.json({ status: 'error, username not found' })
+    return
   }
 
-  return PuzzleGame;
-})();
+  // check if password is valid
+  if (req.body.password !== password) {
+    res.json({ status: 'error, wrong password' })
+    return
+  }
 
-// Inisialisasi game dengan ukuran 3x3 setelah DOM selesai dimuat
-document.addEventListener('DOMContentLoaded', () => {
-  const game = new PuzzleGame(3);
-});
+    res.json({ status: 'success' })
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening port ${port}`)
+})
